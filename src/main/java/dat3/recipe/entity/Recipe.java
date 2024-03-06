@@ -8,20 +8,27 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "categories")
-public class Category {
+@Table(name = "recipes")
+public class Recipe {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
-    @Column(unique = true)
+    int id;
     private String name;
+
+    @Column(columnDefinition="TEXT")
+    private String instructions;
+
+    @Column(columnDefinition="TEXT")
+    private String ingredients;
+
+    private String thumb;
+    private String youTube;
+    private String source;
 
     @CreationTimestamp
     private LocalDateTime created;
@@ -29,14 +36,9 @@ public class Category {
     @UpdateTimestamp
     private LocalDateTime edited;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.PERSIST)
-    private Set<Recipe> recipes;
-
-    public void  addRecipe(Recipe recipe) {
-        this.recipes.add(recipe);
-        recipe.setCategory(this);
-    }
-    public Category(String name) {
-        this.name = name;
+    @ManyToOne
+    private Category category;
+    public void addCategory(Category category) {
+        category.addRecipe(this);
     }
 }
