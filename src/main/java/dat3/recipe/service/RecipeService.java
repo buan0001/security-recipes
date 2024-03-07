@@ -7,12 +7,17 @@ import dat3.recipe.repository.CategoryRepository;
 import dat3.recipe.repository.RecipeRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.Principal;
 import java.util.List;
 
 @Service
@@ -39,7 +44,9 @@ public class RecipeService {
         return new RecipeDto(recipe,false);
     }
 
-    public RecipeDto addRecipe(RecipeDto request) {
+    public RecipeDto addRecipe(RecipeDto request, JwtAuthenticationToken p) {
+        System.out.println("@@@@@@@@ " + p.getName() + " @@@@@@@@@@@@@@@@@@");
+
         if (request.getId() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot provide the id for a new recipe");
         }
@@ -47,6 +54,7 @@ public class RecipeService {
                 orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Only existing categories are allowed"));
         Recipe newRecipe = new Recipe();
         updateRecipe(newRecipe, request, category);
+        newRecipe.setOwner(p.getName());
         recipeRepository.save(newRecipe);
         return new RecipeDto(newRecipe,false);
 
@@ -61,7 +69,7 @@ public class RecipeService {
         original.setCategory(category);
     }
 
-    public RecipeDto editRecipe(RecipeDto request, int id) {
+    public RecipeDto editRecipe(RecipeDto request, int id,JwtAuthenticationToken p) {
         if (request.getId() != id) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot change the id of an existing recipe");
         }
@@ -70,13 +78,17 @@ public class RecipeService {
 
         Recipe recipeToEdit = recipeRepository.findById(id).orElseThrow(()
                 -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recipe not found"));
+        if (!recipeToEdit.getOwner().equals(p.getName())) {throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the recipe's owner can edit the recipe");}
         updateRecipe(recipeToEdit,request, category);
         recipeRepository.save(recipeToEdit);
         return new RecipeDto(recipeToEdit,false);
     }
 
-    public ResponseEntity deleteRecipe(int id) {
+    public ResponseEntity deleteRecipe(int id,JwtAuthenticationToken p) {
+        System.out.println("@@@@@@@@@ " + p.getAuthorities() + " @@@@@@@@");
+        System.out.println("@@@@@@@@@ " + p.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN")) + " @@@@@@@@");
         Recipe recipe = recipeRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recipe not found"));
+        if (!recipe.getOwner().equals(p.getName()) && !p.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN")) ) {throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the recipe's owner can delete the recipe");}
         recipeRepository.delete(recipe);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }

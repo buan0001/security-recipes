@@ -21,11 +21,13 @@ public class RecipeDto {
     private String youTube;
     private String thumb;
     private String source;
+    private String owner;
     private LocalDateTime created;
     private LocalDateTime edited;
 
     public RecipeDto(Recipe r, boolean includeAll) {
         this.id = r.getId();
+        this.owner = r.getOwner();
         this.name = r.getName();
         this.instructions = r.getInstructions();
         this.ingredients = r.getIngredients();

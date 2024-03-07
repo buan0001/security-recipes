@@ -67,9 +67,9 @@ public class SecurityConfig {
             .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.GET, "/recipes/*")).permitAll()
 
             // Requires authentication
-            .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.POST, "/recipes")).hasAuthority("USER")
-            .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.PUT, "/recipes/*")).hasAuthority("USER")
-            .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.DELETE, "/recipes/*")).hasAuthority("USER")
+            .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.POST, "/recipes")).hasAnyAuthority("USER", "ADMIN")
+            .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.PUT, "/recipes/*")).hasAnyAuthority("USER", "ADMIN")
+            .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.DELETE, "/recipes/*")).hasAnyAuthority("USER", "ADMIN")
             .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.POST, "/categories")).hasAuthority("ADMIN")
 
             //Allow for swagger-ui
