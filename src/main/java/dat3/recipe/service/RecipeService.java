@@ -78,7 +78,7 @@ public class RecipeService {
 
         Recipe recipeToEdit = recipeRepository.findById(id).orElseThrow(()
                 -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recipe not found"));
-        if (!recipeToEdit.getOwner().equals(p.getName())) {throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the recipe's owner can edit the recipe");}
+        if (recipeToEdit.getOwner() != null && !recipeToEdit.getOwner().equals(p.getName())) {throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Only the recipe's owner can edit the recipe");}
         updateRecipe(recipeToEdit,request, category);
         recipeRepository.save(recipeToEdit);
         return new RecipeDto(recipeToEdit,false);
@@ -92,6 +92,19 @@ public class RecipeService {
         recipeRepository.delete(recipe);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
+
+//    private static void checkRoles(String owner) {
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
+//        List<String> roles = authorities.stream()
+//                .map(GrantedAuthority::getAuthority)
+//                .collect(Collectors.toList());
+//        boolean isAdmin = roles.contains("ADMIN");
+//        String name = auth.getName();
+//        if(!isAdmin && !name.equals(owner)){
+//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You may only edit/delete your own recipes");
+//        }
+//    }
 
 
 

@@ -18,7 +18,9 @@ public class CategoryService {
     public List<String> getAllCategories() {
         List<Category> categories =  categoryRepository.findAll();
         //Convert from list of Categories to DTO-type, list of Strings
-        return categories.stream().map((c)->new String(c.getName())).toList();
+        var list = categories.stream().map((c)->new String(c.getName())).toList();
+        System.out.println("list" +list);
+        return list;
     }
 
     public List<String> save(Category newCategory) {
